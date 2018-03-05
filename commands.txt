@@ -1,0 +1,58 @@
+./pox.py SimpleLoadBalancer --ip=10.1.2.3 -servers=10.0.0.5,10.0.0.6,10.0.0.7,10.0.0.8
+
+sudo mn --topo single,8 --controller remote --mac --switch ovsk 
+
+tcpdump -XX -n -i h2-eth0
+
+ping -c1 10.0.0.4
+
+
+        r = arp()
+        r.hwtype = r.HW_TYPE_ETHERNET  #specifies the network protocol type
+        r.prototype = r.PROTO_TYPE_IP  #protocol type for ipv4 this has the value 0x0800
+        r.protolen = r.protolen        #Ethernet  addresses size is  6
+        r.opcode = r.REQUEST            
+        r.hwdst = self.broadcast       # sender hardware address
+        r.hwsrc = self.lb_mac          #internetwork address of the sender
+        r.protodst = ip                
+        r.protosrc = self.service_ip
+
+        e = ethernet(type=ethernet.ARP_TYPE, src=self.lb_mac, dst=self.broadcast)
+        e.set_payload(r)
+
+        msg = of.ofp_packet_out()
+        msg.data = e.pack()     #kanei paketo auto pou epistrefei h payload
+        msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
+        msg.in_port = inport
+        self.connection.send(msg)
+
+
+
+
+
+    def __init__(self, service_ip, server_ips = []): #initialize
+        core.openflow.addListeners(self)
+        self.macToPort ={}
+        self.service_ip=service_ip
+
+        print 'Inside Constractor^^^^^^:'
+        c=0
+
+        self.total_servers =len(server_ips)
+        for w in range (0,len(server_ips)):
+            ipv_4=str(server_ips[w]).split('.')
+
+            self.macToPort[w] = {'MAC': "00:00:00:00:00:0"+ipv_4[len(server_ips)-1],'IP' : ipv_4,"PORT" :0}
+        #print self.macToPort
+
+        for x in self.macToPort:
+            print self.macToPort[x]
+        print 'This is service ip: ',service_ip
+        #write your code here!!!
+        """
+        for server_ip in self.server_ips:
+            #discover_server i 
+            self.send_proxied_arp_request(self.connection, server_ip)
+        """
+        pass
+
